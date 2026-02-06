@@ -1,13 +1,35 @@
 package jamiebalfour;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 public class CSVFileMover {
 
-  boolean doIt = true;
+  static boolean doIt = true;
+
+  public boolean copyFile(String sourcePath, String destPath) {
+    Path source = Paths.get(sourcePath);
+    Path destination = Paths.get(destPath);
+
+    try{
+      Files.copy(
+              source,
+              destination,
+              StandardCopyOption.REPLACE_EXISTING,
+              StandardCopyOption.COPY_ATTRIBUTES
+      );
+      return true;
+    } catch (IOException e){
+      return false;
+    }
+
+  }
 
   public CSVFileMover(String inputDirectory, String[] files, String[] outputDirectories, String appendix, String outputFolderPath) {
 
@@ -26,6 +48,11 @@ public class CSVFileMover {
       File actualPath = new File(inputDirectory + "/" + files[i] + appendix);
       File outputFile = new File(outputPath + "/" + files[i] + appendix);
 
+      int no = 1;
+      while(outputFile.exists()){
+        outputFile = new File(outputPath + "/" + files[i] + " copy " + no + appendix);
+      }
+
       /*try {
         CSVFileMover.writeFile(actualPath.getAbsolutePath(), "t", false);
       } catch (IOException e) {
@@ -43,16 +70,18 @@ public class CSVFileMover {
 
 
           //Move the file to the new directory
-          boolean result = actualPath.renameTo(outputFile);
+          //boolean result = actualPath.renameTo(outputFile);
+
+          boolean result = copyFile(actualPath.getAbsolutePath(), outputPath);
 
 
           if (!result) {
-            System.err.println("Failed to move file: " + actualPath + " to " + outputFile);
+            System.err.println("Failed to copy file: " + actualPath + " to " + outputFile);
           } else {
-            System.out.println("Moved file: " + actualPath.toString() + " to " + outputFile);
+            System.out.println("Copied file: " + actualPath.toString() + " to " + outputFile);
           }
         } else {
-          System.out.println("Would move file: " + actualPath);
+          System.out.println("Would copy file: " + actualPath);
           System.out.println("To file: " + outputFile);
         }
 
@@ -101,6 +130,10 @@ public class CSVFileMover {
       outputFolderPath = args[3];
     }
 
+    if(args.length >= 5){
+      doIt = false;
+    }
+
     String inputDirectory = args[0];
 
     System.out.println("Input directory: " + inputDirectory);
@@ -137,9 +170,8 @@ public class CSVFileMover {
     String[] outputDirs = outputDirsList.toArray(new String[0]);
 
     System.out.println("You have selected the following files: " + Arrays.toString(files));
-    System.out.println("You have selected the following output directories: " + Arrays.toString(outputDirs));
 
-    System.out.println("Would you like to move these files? (y/n)");
+    System.out.println("Would you like to copy these files? (y/n)");
 
     BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
     try {
