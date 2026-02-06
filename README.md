@@ -21,7 +21,9 @@
 <p>
   It is run by using the following syntax:
 </p>
-<p><code>java -jar CSVFileMover.jar <em>inputDirectory</em> <em>csvFile</em> [<em>fileAppendix</em>] [<em>outputFolderPath</em>]</code></p>
+<p><code>java -jar CSVFileMover.jar <em>inputDirectory</em> <em>csvFile</em> [<em>fileAppendix</em>] [<em>outputFolderPath</em>] [dryrun]</code></p>
+
+<p>Add in the dryrun command to see what it will do with the files.</p>
 
 <h2>Usage examples</h2>
 <p>
