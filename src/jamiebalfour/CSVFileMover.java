@@ -2,17 +2,29 @@ package jamiebalfour;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class CSVFileMover {
 
-  boolean doIt = false;
+  boolean doIt = true;
 
   public CSVFileMover(String inputDirectory, String[] files, String[] outputDirectories, String appendix, String outputFolderPath) {
 
     for (int i = 0; i < files.length; i++) {
+      String outputPath = outputDirectories[i];
+
+      if(!outputFolderPath.isEmpty()){
+        if(!outputFolderPath.endsWith("/")){
+          outputPath = outputFolderPath + "/" + outputPath;
+        } else{
+          outputPath = outputFolderPath + outputPath;
+        }
+
+      }
+
       File actualPath = new File(inputDirectory + "/" + files[i] + appendix);
-      File outputPath = new File(outputFolderPath + outputDirectories[i] + "/" + files[i]);
+      File outputFile = new File(outputPath + "/" + files[i] + appendix);
 
       /*try {
         CSVFileMover.writeFile(actualPath.getAbsolutePath(), "t", false);
@@ -25,23 +37,23 @@ public class CSVFileMover {
         System.err.println("File does not exist: " + actualPath);
       } else {
         if (doIt) {
-          if (new File(outputFolderPath + outputDirectories[i]).exists()) {
-            new File(outputDirectories[i]).mkdirs();
+          if (!new File(outputPath).exists()) {
+            new File(outputPath).mkdirs();
           }
 
 
           //Move the file to the new directory
-          boolean result = actualPath.renameTo(outputPath);
+          boolean result = actualPath.renameTo(outputFile);
 
 
           if (!result) {
-            System.err.println("Failed to move file: " + actualPath.toString());
+            System.err.println("Failed to move file: " + actualPath + " to " + outputFile);
           } else {
-            System.out.println("Moved file: " + actualPath.toString());
+            System.out.println("Moved file: " + actualPath.toString() + " to " + outputFile);
           }
         } else {
           System.out.println("Would move file: " + actualPath);
-          System.out.println("To directory: " + outputPath);
+          System.out.println("To file: " + outputFile);
         }
 
       }
@@ -124,7 +136,21 @@ public class CSVFileMover {
     String[] files = filesList.toArray(new String[0]);
     String[] outputDirs = outputDirsList.toArray(new String[0]);
 
-    CSVFileMover csvFileMover = new CSVFileMover(inputDirectory, files, outputDirs, appendix, outputFolderPath);
+    System.out.println("You have selected the following files: " + Arrays.toString(files));
+    System.out.println("You have selected the following output directories: " + Arrays.toString(outputDirs));
+
+    System.out.println("Would you like to move these files? (y/n)");
+
+    BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+    try {
+      if(in.readLine().equals("y")){
+        CSVFileMover csvFileMover = new CSVFileMover(inputDirectory, files, outputDirs, appendix, outputFolderPath);
+      }
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+
+
   }
 
 }
