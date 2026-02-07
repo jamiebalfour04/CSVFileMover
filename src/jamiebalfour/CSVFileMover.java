@@ -115,8 +115,8 @@ public class CSVFileMover {
   public static void writeFile(String filename, String[] content, boolean append) throws IOException {
     PrintWriter out;
     out = new PrintWriter(new BufferedWriter(new FileWriter(filename, append)));
-    for (int i = 0; i < content.length; i++) {
-      out.print(content[i]);
+    for (String s : content) {
+      out.print(s);
     }
     out.close();
   }
