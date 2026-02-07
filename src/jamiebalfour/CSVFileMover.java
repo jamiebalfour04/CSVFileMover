@@ -12,6 +12,7 @@ import java.util.List;
 public class CSVFileMover {
 
   static boolean doIt = true;
+  static boolean flatFolder = false;
 
   public boolean copyFile(String sourcePath, String destPath) {
     Path source = Paths.get(sourcePath);
@@ -36,17 +37,30 @@ public class CSVFileMover {
     for (int i = 0; i < files.length; i++) {
       String outputPath = outputDirectories[i];
 
-      if(!outputFolderPath.isEmpty()){
-        if(!outputFolderPath.endsWith("/")){
-          outputPath = outputFolderPath + "/" + outputPath;
-        } else{
-          outputPath = outputFolderPath + outputPath;
-        }
+      if(!flatFolder){
+        if(!outputFolderPath.isEmpty()){
+          if(!outputFolderPath.endsWith("/")){
+            outputPath = outputFolderPath + "/" + outputPath;
+          } else{
+            outputPath = outputFolderPath + outputPath;
+          }
 
+        }
+      } else{
+        if(!outputFolderPath.isEmpty()){
+          outputPath = outputFolderPath;
+        } else{
+          throw new RuntimeException("Output folder path cannot be empty if flat folder is true");
+        }
       }
+
 
       File actualPath = new File(inputDirectory + "/" + files[i] + appendix);
       File outputFile = new File(outputPath + "/" + files[i] + appendix);
+
+      if(flatFolder){
+        actualPath = new File(inputDirectory + "/" + files[i] + "_" + outputDirectories[i] + appendix);
+      }
 
       int no = 1;
       while(outputFile.exists()){
@@ -78,7 +92,7 @@ public class CSVFileMover {
           if (!result) {
             System.err.println("Failed to copy file: " + actualPath + " to " + outputFile);
           } else {
-            System.out.println("Copied file: " + actualPath.toString() + " to " + outputFile);
+            System.out.println("Copied file: " + actualPath + " to " + outputFile);
           }
         } else {
           System.out.println("Would copy file: " + actualPath);
@@ -114,10 +128,14 @@ public class CSVFileMover {
 
     if (args.length == 0) {
       System.out.println("Usage: inputDirectory csvFile [fileAppendix] [outputFolderPath]");
+      System.out.println("Example: java -jar CSVFileMover.jar /home/user/images/ images.csv .jpg /home/user/new_images/");
+      System.out.println("Note: if not fileAppendix is provided, every file in the directory will be copied to the output folders.");
+
+      System.exit(1);
     }
 
-    if (!(args.length >= 2)) {
-      System.err.println("Please provide a directory to read from as the first argument.");
+    if(args.length == 1){
+      System.out.println("You must provide a CSV file to read from.");
 
       System.exit(1);
     }
@@ -130,9 +148,8 @@ public class CSVFileMover {
       outputFolderPath = args[3];
     }
 
-    if(args.length >= 5){
-      doIt = false;
-    }
+    BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+
 
     String inputDirectory = args[0];
 
@@ -165,22 +182,34 @@ public class CSVFileMover {
       throw new RuntimeException(e);
     }
 
+
+    System.out.println("Would you like to run as a dry run? (y/n)");
+
+    try {
+      if(in.readLine().equals("y")){
+        doIt = false;
+      }
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+
     // Convert to arrays
     String[] files = filesList.toArray(new String[0]);
     String[] outputDirs = outputDirsList.toArray(new String[0]);
 
     System.out.println("You have selected the following files: " + Arrays.toString(files));
 
-    System.out.println("Would you like to copy these files? (y/n)");
+    System.out.println("Would you like to proceed with these files? (y/n)");
 
-    BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+
     try {
       if(in.readLine().equals("y")){
-        CSVFileMover csvFileMover = new CSVFileMover(inputDirectory, files, outputDirs, appendix, outputFolderPath);
+        new CSVFileMover(inputDirectory, files, outputDirs, appendix, outputFolderPath);
       }
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+
 
 
   }
